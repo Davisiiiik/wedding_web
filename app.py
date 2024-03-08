@@ -4,10 +4,10 @@ class WebApp(Flask):
     def __init__(self):
         super().__init__(__name__, template_folder='pages')
         self.menu = [
-            {'title': 'Hlavní stránka', 'url': '/'},
-            {'title': 'Místo',          'url': '/place'},
-            {'title': 'Dotazník',       'url': '/form'},
-            {'title': 'Svatební dary',  'url': '/gifts'}
+            {'title': 'Úvod',           'url': 'home'},
+            {'title': 'Informace',      'url': 'info'},
+            {'title': 'Dotazník',       'url': 'form'},
+            {'title': 'Svatební dary',  'url': 'gifts'}
         ]
 
         self.create_pages()
@@ -17,22 +17,14 @@ class WebApp(Flask):
         def index():
             return render_template('index.html', menu=self.menu)
 
-        @self.route('/place')
-        def place():
-            return render_template('place.html', menu=self.menu)
-
-        @self.route('/form')
-        def form():
-            return render_template('form.html', menu=self.menu)
-
-        @self.route('/gifts')
-        def gifts():
-            return render_template('gifts.html', menu=self.menu)
+        @self.route('/<section>')
+        def load_section(section):
+            return render_template(f'{section}.html')
 
 
 def main():
     App = WebApp()
-    App.run(debug=True, host='localhost', port=19000)
+    App.run(debug=True, host='10.0.0.116', port=2000)
 
 if __name__ == '__main__':
     main()
