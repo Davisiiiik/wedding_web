@@ -9,6 +9,15 @@ function smooth_scroll() {
                 top: target.offsetTop,
                 behavior: 'smooth'
             });
+
+            // Update URL
+            const url = new URL(window.location.href);
+            url.hash = this.getAttribute('href');
+            //console.info(url.hash)
+            if (url.hash === "#home") {
+                url.hash = ''
+            }
+            history.pushState(null, null, url);
         });
     });
 }
