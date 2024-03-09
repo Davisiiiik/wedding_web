@@ -10,6 +10,12 @@ class WebApp(Flask):
             {'title': 'Svatební dary',  'url': 'gifts'}
         ]
 
+        self.gifts = [
+            {'name': 'Martini skleničky',
+             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
+             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'}
+        ]
+
         self.create_pages()
 
     def create_pages(self):
