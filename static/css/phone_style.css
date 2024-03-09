@@ -71,14 +71,14 @@
     #form {
         background-image: url(../img/background_form.png);
         background-position: center;
-        background-repeat: no-repeat;
+        background-repeat: repeat;
         background-size: 100%;
     }
 
     .form {
         min-width: 260px;
         max-width: 800px;
-        height: 2000px;
+        height: 2200px;
         margin: auto;
     }
 
