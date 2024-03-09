@@ -2,7 +2,7 @@ from flask import Flask, render_template
 
 class WebApp(Flask):
     def __init__(self):
-        super().__init__(__name__, template_folder='pages')
+        super().__init__(__name__)
         self.menu = [
             {'title': 'Úvod',           'url': 'home'},
             {'title': 'Informace',      'url': 'info'},
