@@ -13,6 +13,12 @@ class WebApp(Flask):
         self.gifts = [
             {'name': 'Martini skleničky',
              'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
+             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'},
+            {'name': 'Martini skleničky',
+             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
+             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'},
+            {'name': 'Martini skleničky',
+             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
              'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'}
         ]
 
@@ -21,7 +27,7 @@ class WebApp(Flask):
     def create_pages(self):
         @self.route('/')
         def index():
-            return render_template('index.html', menu=self.menu)
+            return render_template('index.html', menu=self.menu, gifts=self.gifts)
 
         @self.route('/<section>')
         def load_section(section):

@@ -1,3 +1,31 @@
-<div class="gift-frame">
+{% for item in gifts %}
+    <div class="gift-frame">
+        <div class="text-wrapper">
+            <div>
+                <h1>{{item.name}}</h1>
+                {% if 0 %}
+                <h3 style="color: green;">Volné</h3>
+                {% else %}
+                <h3 style="color: red;">Zamluvené</h3>
+                {% endif %}
+                <p>Toto je krásný dárek, ze kterého chceme pít. Často a hodně</p>
+            </div>
+            <div class="buttons">
+                <a href="{{item.url}}" target="_blank">Dostupné zde</a>
+                {% if 0 %}
+                    <a href="{{item.url}}" target="_blank">Zamluvit</a>
+                {% else %}
+                    {% if 0 %}
+                        <a href="{{item.url}}" target="_blank">Uvolnit</a>
+                    {% else %}
+                        <a href="{{item.url}}" target="_blank" style="pointer-events: none; background-color: #888;">Zamluvit</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
 
-</div>
+        <div class="img-wrapper">
+            <img src="{{item.img}}">
+        </div>
+    </div>
+{% endfor %}
