@@ -1,7 +1,7 @@
 import yaml
 from zlib import crc32
 
-CONFIG_FILE = "gifts.yml"
+GIFT_LIST_FILE = "gifts.yml"
 
 class Gift:
     def __init__(self, name:str, title:str, url:str, img:str, desc:str) -> None:
@@ -34,14 +34,14 @@ class Gifts:
     def __init__(self) -> None:
         self.gift_dict = {}
 
-        with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+        with open(GIFT_LIST_FILE, "r", encoding="utf-8") as file:
             gifts = yaml.load(file, Loader=yaml.Loader)
 
         try:
             for gift in gifts:
                 self.gift_dict[gift] = Gift(gift, **gifts[gift])
         except TypeError as err:
-            raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n", err)
+            raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n", err)
 
     def __repr__(self) -> str:
         return "\n".join(str(key) + ": "

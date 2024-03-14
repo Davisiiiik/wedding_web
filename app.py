@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 from gifts import Gifts
+import yaml
 
+CONFIG_FILE = "config.yml"
 IP = '10.0.0.116'
 PORT = 2000
 
@@ -60,11 +62,23 @@ class WebApp(Flask):
                 return "success"
             else:
                 return "error"
+            
+
+def get_config() -> dict:
+    with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+        config = yaml.load(file, Loader=yaml.Loader)
+
+    return config
 
 
-def main():
+def main() -> None:
+    config = get_config()
     App = WebApp()
-    App.run(debug=True, host=IP, port=PORT)
+
+    try:
+        App.run(**config)
+    except TypeError as err:
+        raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n", err)
 
 if __name__ == '__main__':
     main()
