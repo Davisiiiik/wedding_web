@@ -2,24 +2,24 @@
     <div class="gift-frame">
         <div class="text-wrapper">
             <div>
-                <h1>{{item.name}}</h1>
-                {% if 0 %}
-                <h3 style="color: green;">Volné</h3>
-                {% else %}
+                <h1>{{item.title}}</h1>
+                {% if item.claimed %}
                 <h3 style="color: red;">Zamluvené</h3>
+                {% else %}
+                <h3 style="color: green;">Volné</h3>
                 {% endif %}
-                <p>Toto je krásný dárek, ze kterého chceme pít. Často a hodně</p>
+                <p>{{item.desc}}</p>
             </div>
             <div class="buttons">
-                <a href="{{item.url}}" target="_blank">Dostupné zde</a>
-                {% if 0 %}
-                    <a href="{{item.url}}" target="_blank">Zamluvit</a>
-                {% else %}
-                    {% if 0 %}
-                        <a href="{{item.url}}" target="_blank">Uvolnit</a>
+                <a class="gift-button"  href="{{item.url}}">Dostupné zde</a>
+                {% if item.claimed %}
+                    {% if 1 %}
+                        <a class="gift-button"  onclick="popupFree('{{item.name}}')">Uvolnit</a>
                     {% else %}
-                        <a href="{{item.url}}" target="_blank" style="pointer-events: none; background-color: #888;">Zamluvit</a>
+                        <a class="gift-button"  href="" style="pointer-events: none; background-color: #888;">Rezervovat</a>
                     {% endif %}
+                {% else %}
+                    <a class="gift-button" onclick="popupClaim('{{item.name}}')">Rezervovat</a>
                 {% endif %}
             </div>
         </div>

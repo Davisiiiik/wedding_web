@@ -1,4 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from gifts import Gifts
+
+IP = '10.0.0.116'
+PORT = 2000
 
 class WebApp(Flask):
     def __init__(self):
@@ -10,33 +14,57 @@ class WebApp(Flask):
             {'title': 'Svatební dary',  'url': 'gifts'}
         ]
 
-        self.gifts = [
-            {'name': 'Martini skleničky',
-             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
-             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'},
-            {'name': 'Martini skleničky',
-             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
-             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'},
-            {'name': 'Martini skleničky',
-             'url': 'https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm',
-             'img': 'https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400'}
-        ]
+        self.GiftList = Gifts()
 
         self.create_pages()
 
     def create_pages(self):
         @self.route('/')
         def index():
-            return render_template('index.html', menu=self.menu, gifts=self.gifts)
+            return render_template('index.html', menu=self.menu, gifts=self.GiftList.get())
 
         @self.route('/<section>')
         def load_section(section):
+            print("Section:", section)
             return render_template(f'{section}.html')
+
+        @self.route('/get_info', methods=['POST'])
+        def get_info():
+            name = request.form['name']
+            return [self.GiftList[name].title, f"{self.GiftList[name].free_code:X}"]
+
+        @self.route('/claim', methods=['POST'])
+        def claim():
+            name = request.form['name']
+
+            # Mark gift as claimed
+            self.GiftList.claim(name)
+
+            return []
+
+        @self.route('/free', methods=['POST'])
+        def free():
+            name = request.form['name']
+            code = request.form['code']
+
+            if not code:
+                return "error"
+
+            code.upper()
+
+            print("DEBUG:", name, code, f"{self.GiftList[name].free_code:X}")
+
+            if code == f"{self.GiftList[name].free_code:X}":
+                # Mark gift as freed
+                self.GiftList.free(name)
+                return "success"
+            else:
+                return "error"
 
 
 def main():
     App = WebApp()
-    App.run(debug=True, host='10.0.0.116', port=2000)
+    App.run(debug=True, host=IP, port=PORT)
 
 if __name__ == '__main__':
     main()

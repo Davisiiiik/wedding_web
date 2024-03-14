@@ -1,0 +1,15 @@
+martini:
+  title: Martini skleničky
+  url: https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm
+  img: https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400
+  desc: Toto je krásný dárek, ze kterého chceme pít. Často a hodně
+test1:
+  title: Test 1
+  url: https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm
+  img: https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400
+  desc: Toto je krásný dárek, ze kterého chceme pít. Často a hodně
+test2:
+  title: Test 2
+  url: https://www.alza.cz/bohemia-royal-crystal-sada-sklenic-na-koktejl-4-ks-210-ml-d9930586.htm
+  img: https://image.alza.cz/products/BHMskl780/BHMskl780.jpg?width=1400&height=1400
+  desc: Toto je krásný dárek, jehož popis je trochu odlišný od ostatních dvou

@@ -9,27 +9,39 @@
     <link href="https://fonts.googleapis.com/css?family=Spectral&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
-<body>
-    <div id="body">
-        <nav class="navbar">
-            <ul>
-                {% for item in menu %}
-                    <li><a href="#{{ item.url }}">{{ item.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </nav>
+    <body>
+        <div id="body">
+            <nav class="navbar">
+                <ul>
+                    {% for item in menu %}
+                        <li><a href="#{{ item.url }}">{{ item.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
 
-        <script> smooth_scroll(); </script>
+            <script>
+                smooth_scroll();
+            </script>
 
-        {% for item in menu %}
-            <section id="{{ item.url }}">
-                <div class="section-border"></div> <!-- Padding size of the menu -->
-                {% include item.url + '.html' %}
-            </section>
-        {% endfor %}
-    </div>
+            {% for item in menu %}
+                <section id="{{ item.url }}">
+                    <div class="section-border"></div> <!-- Padding size of the menu -->
+                    {% include item.url + '.html' %}
+                </section>
+            {% endfor %}
 
-</body>
+            <!-- Pop-up HTML -->
+            <div id="overlay" onclick="closePopup()"></div>
+            <div id="popup" class="gift-frame">
+                <div id="popup-content"></div>
+                <p id="claim-result"></p>
+                <input type="text" id="code-input" maxlength="6" pattern="[0-9a-fA-F]{0,6}">
+                <input type="submit" id="popup-button" class="gift-button">
+            </div>
+        </div>
+
+    </body>
 </html>
 

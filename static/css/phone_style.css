@@ -94,8 +94,8 @@
 
 /* ============================== GIFT SECTION ============================== */
 
-#gifts .text-wrapper {
-    text-align: unset;
-}
+    #gifts .text-wrapper {
+        text-align: unset;
+    }
 
 }
