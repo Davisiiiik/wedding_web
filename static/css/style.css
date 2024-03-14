@@ -316,6 +316,7 @@
 #claim-result {
     font-weight: bold;
     max-width: 250px;
+    align-self: center;
 }
 
 .shake {

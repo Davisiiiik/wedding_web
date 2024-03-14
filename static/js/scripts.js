@@ -40,7 +40,7 @@ function popupClaim(itemId) {
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('popup').style.display = 'flex';
             
-            document.getElementById('popup-button').value = 'Rezervovat';
+            document.getElementById('popup-button').value = 'Potvrdit';
             document.getElementById('popup-button').onclick = function() { giftClaim(name); };
         }
     });
@@ -72,7 +72,7 @@ function popupFree(itemId) {
     document.getElementById('popup').style.display = 'flex';
     document.getElementById('code-input').style.display = 'block';
     
-    document.getElementById('popup-button').value = 'Uvolnit';
+    document.getElementById('popup-button').value = 'Potvrdit';
     document.getElementById('popup-button').onclick = function() { giftFree(name); };
 }
 

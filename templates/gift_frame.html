@@ -11,12 +11,12 @@
                 <p>{{item.desc}}</p>
             </div>
             <div class="buttons">
-                <a class="gift-button"  href="{{item.url}}">Dostupné zde</a>
+                <a class="gift-button"  href="{{item.url}}" target="_blank">Dostupné zde</a>
                 {% if item.claimed %}
                     {% if 1 %}
                         <a class="gift-button"  onclick="popupFree('{{item.name}}')">Uvolnit</a>
                     {% else %}
-                        <a class="gift-button"  href="" style="pointer-events: none; background-color: #888;">Rezervovat</a>
+                        <a class="gift-button" style="pointer-events: none; background-color: #888;">Rezervovat</a>
                     {% endif %}
                 {% else %}
                     <a class="gift-button" onclick="popupClaim('{{item.name}}')">Rezervovat</a>
