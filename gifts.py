@@ -2,8 +2,7 @@ import yaml
 import random
 from zlib import crc32
 from flask_mysqldb import MySQL
-from MySQLdb import IntegrityError
-from flask import current_app
+from MySQLdb import IntegrityError, OperationalError
 
 GIFT_LIST_FILE = "static/yaml/gifts.yml"
 
@@ -16,7 +15,10 @@ class MySQLBridge:
         self.Mysql:MySQL = Mysql
         
         # Create gifts database table, if it doesnt exist
-        self.create_table()
+        try:
+            self.create_table()
+        except OperationalError as err:
+            raise Exception("Database connection config is invalid. Is it configured correctly?\n" + str(err))
     
     def execute_query(self, query:str, params:tuple=None):
         cursor = self.Mysql.connection.cursor()
@@ -125,7 +127,7 @@ class Gifts:
             for gift in gifts:
                 self.gift_dict[gift] = Gift(gift, **gifts[gift])
         except TypeError as err:
-            raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n", err)
+            raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n" + str(err))
         
         # Load gifts configuration
         self.MysqlBridge = MySQLBridge(Mysql)
@@ -181,11 +183,3 @@ class Gifts:
 
         # Update database information claim status
         self.update_database(name, new_status=False)
-
-    
-def main():
-    App = Gifts()
-    print(App.get())
-
-if __name__ == '__main__':
-    main()
