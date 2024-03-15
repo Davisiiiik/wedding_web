@@ -67,12 +67,15 @@ class WebApp(Flask):
 def get_config() -> dict:
     with open(CONFIG_FILE, "r", encoding="utf-8") as file:
         config = yaml.load(file, Loader=yaml.Loader)
+    
+    connection = config.get("connection")
+    mysql = config.get("mysql")
 
-    return config
+    return connection, mysql
 
 
 def main() -> None:
-    config = get_config()
+    config, _ = get_config()
     App = WebApp()
 
     try:

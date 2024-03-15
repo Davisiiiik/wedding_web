@@ -1,3 +1,10 @@
-host: 10.0.0.116
-port: 2000
-debug: True
+connection:
+  host: 0.0.0.0
+  port: 2000
+  debug: True
+mysql:
+  username: ""
+  password: ""
+  hostname: ""
+  database: ""
+  
