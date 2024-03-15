@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 from gifts import Gifts
 import yaml
 
-CONFIG_FILE = "config.yml"
+CONFIG_FILE = "static/yaml/config.yml"
 IP = '10.0.0.116'
 PORT = 2000
 

@@ -2,7 +2,7 @@ import yaml
 import random
 from zlib import crc32
 
-GIFT_LIST_FILE = "gifts.yml"
+GIFT_LIST_FILE = "static/yaml/gifts.yml"
 
 class Gift:
     def __init__(self, name:str, title:str, url:str, img:str, desc:str) -> None:
