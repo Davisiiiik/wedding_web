@@ -1,13 +1,15 @@
-# This is configuration of host
+# This is configuration of website host
 connection:
   host: 0.0.0.0
   port: 2000
   debug: False
 
-# This is configuration of MySQL
+# This is configuration of MySQL connection
 mysql:
+  # You can add port in hostname like "127.0.0.1:3307", if you want,
+  # otherwise defaulting to 3306
+  hostname: 127.0.0.1
   username: user1
   password: ""
-  hostname: 127.0.0.1:3306
   database: wedding_gifts
   

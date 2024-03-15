@@ -16,8 +16,12 @@ class WebApp(Flask):
             {'title': 'Svatební dary',  'url': 'gifts'}
         ]
 
-        # Config MySQL
-        self.config['MYSQL_HOST'] = mysql_cfg.get('hostname')
+        # Configure MySQL connection parameters
+        host:list = mysql_cfg.get('hostname').split(":")
+        if len(host) > 1:
+            self.config['MYSQL_PORT'] = int(host[1])
+
+        self.config['MYSQL_HOST'] = host[0]
         self.config['MYSQL_USER'] = mysql_cfg.get('username')
         self.config['MYSQL_PASSWORD'] = mysql_cfg.get('password')
         self.config['MYSQL_DB'] = mysql_cfg.get('database')
