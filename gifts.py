@@ -9,7 +9,6 @@ GIFT_LIST_FILE = "static/yaml/gifts.yml"
 OK = 0
 ERR = -1
 
-
 class MySQLBridge:
     def __init__(self, Mysql:MySQL):
         self.Mysql:MySQL = Mysql
@@ -18,7 +17,9 @@ class MySQLBridge:
         try:
             self.create_table()
         except OperationalError as err:
-            raise Exception("Database connection config is invalid. Is it configured correctly?\n" + str(err))
+            raise Exception("Database connection config is invalid."
+                            + "Is it configured correctly?\n"
+                            + str(err))
     
     def execute_query(self, query:str, params:tuple=None):
         cursor = self.Mysql.connection.cursor()
@@ -49,7 +50,8 @@ class MySQLBridge:
         try:
             self.execute_query(query, (name, free_code, claimed))
         except IntegrityError:
-            print("Error: Database entry with name \"" + name + "\" already exists!")
+            print("Error: Database entry with name \""
+                  + name + "\" already exists!")
             return ERR
         else:
             return OK
@@ -115,6 +117,7 @@ class Gift:
             self.claimed = new_status
 
 
+
 class Gifts:
     def __init__(self, Mysql:MySQL) -> None:
         self.gift_dict:dict = {}
@@ -165,6 +168,9 @@ class Gifts:
             ret_ls.append({"name": key} | gift.to_dict())
 
         return ret_ls
+    
+    def is_claimed(self, name:str) -> bool:
+        return self.gift_dict[name].claimed
     
     def claim(self, name:str) -> None:
         # Update class attribute claim status

@@ -61,6 +61,11 @@ function giftClaim(name) {
     
                 updateGiftState(name, true);
             }
+            else {
+                inputError(document.getElementById('code-input'),
+                           document.getElementById('claim-result'),
+                           'Svatební dar už byl zarezervován někým jiným')
+            }
         }
     });
 }

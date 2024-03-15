@@ -58,9 +58,13 @@ class WebApp(Flask):
         def claim():
             name = request.form['name']
 
-            # Mark gift as claimed including database update
-            self.GiftList.claim(name)
-            return "success"
+            print("DEBUG:", self.GiftList.is_claimed(name))
+            if not self.GiftList.is_claimed(name):
+                # Mark gift as claimed including database update
+                self.GiftList.claim(name)
+                return "success"
+            else:
+                return "error"
 
         # Handle gift free request
         @self.route('/free', methods=['POST'])
