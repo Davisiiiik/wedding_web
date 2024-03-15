@@ -52,11 +52,15 @@ function giftClaim(name) {
         url: "/claim",
         data: { name: name },
         success: function(response) {
-            document.getElementById('claim-result').innerHTML = 'Svatební dar úspěšně rezervován';
-            document.getElementById('claim-result').style.color = 'green';
-
-            document.getElementById('popup-button').value = 'Zavřít';
-            document.getElementById('popup-button').onclick = closePopup;
+            if (response == "success") {
+                document.getElementById('claim-result').innerHTML = 'Svatební dar úspěšně rezervován';
+                document.getElementById('claim-result').style.color = 'green';
+    
+                document.getElementById('popup-button').value = 'Zavřít';
+                document.getElementById('popup-button').onclick = closePopup;
+    
+                updateGiftState(name, true);
+            }
         }
     });
 }
@@ -79,9 +83,6 @@ function popupFree(itemId) {
 function giftFree(name) {
     const regex = /^[0-9A-F]*$/; // Regular expression for hexadecimal characters
     var code = document.getElementById('code-input').value.toUpperCase();
-
-    console.info("DEBUG:", "\"" + code + "\"")
-
 
     if (code == null || code == "") {
         inputError(document.getElementById('code-input'),
@@ -109,6 +110,8 @@ function giftFree(name) {
 
                     document.getElementById('popup-button').value = 'Zavřít';
                     document.getElementById('popup-button').onclick = closePopup;
+
+                    updateGiftState(name, false);
                     break;
 
                 case "error":
@@ -133,4 +136,18 @@ function closePopup() {
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('popup').style.display = 'none';
     document.getElementById('code-input').style.display = 'none';
+    document.getElementById('code-input').value = '';
+    document.getElementById('claim-result').innerHTML = '';
+}
+
+function updateGiftState(giftName, newStateClaimed) {
+    // Update Claim/Free state title for particular gift
+    giftState = document.getElementById(giftName + '_state');
+    giftState.style.color = newStateClaimed ? 'red' : 'green';
+    giftState.innerHTML = newStateClaimed ? 'Rezervované' : 'Volné';
+
+    // Update Claim/Free button for particular gift
+    giftButton = document.getElementById(giftName + '_button');
+    giftButton.onclick = newStateClaimed ? function() { popupFree(giftName); } : function() { popupClaim(giftName); };
+    giftButton.innerHTML = newStateClaimed ? 'Uvolnit' : 'Rezervovat';
 }

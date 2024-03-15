@@ -33,7 +33,7 @@ class WebApp(Flask):
         @self.route('/get_info', methods=['POST'])
         def get_info():
             name = request.form['name']
-            return [self.GiftList[name].title, f"{self.GiftList[name].free_code:X}"]
+            return [self.GiftList[name].title, self.GiftList[name].generate_code(name)]
 
         @self.route('/claim', methods=['POST'])
         def claim():
@@ -42,7 +42,7 @@ class WebApp(Flask):
             # Mark gift as claimed
             self.GiftList.claim(name)
 
-            return []
+            return "success"
 
         @self.route('/free', methods=['POST'])
         def free():
@@ -54,9 +54,9 @@ class WebApp(Flask):
 
             code.upper()
 
-            print("DEBUG:", name, code, f"{self.GiftList[name].free_code:X}")
+            print("DEBUG:", name, code, self.GiftList[name].free_code)
 
-            if code == f"{self.GiftList[name].free_code:X}":
+            if code == self.GiftList[name].free_code:
                 # Mark gift as freed
                 self.GiftList.free(name)
                 return "success"

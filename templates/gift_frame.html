@@ -3,26 +3,18 @@
         <div class="text-wrapper">
             <div>
                 <h1>{{item.title}}</h1>
-                {% if item.claimed %}
-                <h3 style="color: red;">Zamluvené</h3>
-                {% else %}
-                <h3 style="color: green;">Volné</h3>
-                {% endif %}
+                <h3 id="{{item.name}}_state" class="claim-state"></h3>
                 <p>{{item.desc}}</p>
             </div>
             <div class="buttons">
                 <a class="gift-button"  href="{{item.url}}" target="_blank">Dostupné zde</a>
-                {% if item.claimed %}
-                    {% if 1 %}
-                        <a class="gift-button"  onclick="popupFree('{{item.name}}')">Uvolnit</a>
-                    {% else %}
-                        <a class="gift-button" style="pointer-events: none; background-color: #888;">Rezervovat</a>
-                    {% endif %}
-                {% else %}
-                    <a class="gift-button" onclick="popupClaim('{{item.name}}')">Rezervovat</a>
-                {% endif %}
+                <a id="{{item.name}}_button" class="gift-button"></a>
             </div>
         </div>
+
+        <script>
+            updateGiftState("{{item.name}}", JSON.parse("{{item.claimed|tojson}}"));
+        </script>
 
         <div class="img-wrapper">
             <img src="{{item.img}}">

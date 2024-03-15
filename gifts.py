@@ -1,4 +1,5 @@
 import yaml
+import random
 from zlib import crc32
 
 GIFT_LIST_FILE = "gifts.yml"
@@ -10,14 +11,21 @@ class Gift:
         self.img:str = img
         self.desc:str = desc
 
-        self.free_code:str = self.generate_code(name)
+        self.free_code:str = self.generate_code(name, False)
         self.claimed:bool = False
     
     def __repr__(self) -> str:
         return f"\"{self.title}\", {'Claimed' if self.claimed else 'Available'} ({self.free_code:X})"
 
-    def generate_code(self, name:str) -> int:
-        return crc32(name.encode("utf-8")) & 0xFFFFFF
+    def generate_code(self, name:str, update:bool=True) -> str:
+        # Generate 0xRRDDDD code, where R is random and D is determined by name
+        new_code = (crc32(name.encode('utf-8')) & 0xFFFF + (random.randint(0, 255) << 16))
+        # Transform new code into 6 cipher hexa string
+        new_code = f"{new_code:06X}"
+
+        if update:
+            self.free_code = new_code
+        return new_code
     
     def to_dict(self) -> None:
         return {"title": self.title, "url": self.url, "img": self.img,
@@ -28,6 +36,9 @@ class Gift:
     
     def free(self) -> None:
         self.claimed = False
+
+    def update_database(self, name:str, new_status:bool):
+        pass
 
 
 class Gifts:
@@ -50,7 +61,7 @@ class Gifts:
     def __getitem__(self, name: str) -> Gift:
         return self.gift_dict[name]
 
-    def update_sql_stauts(self, name:str, new_status:bool):
+    def update_database(self, name:str, new_status:bool):
         pass
 
     def get(self):
@@ -68,7 +79,7 @@ class Gifts:
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_sql_stauts(name, True)
+        self.update_database(name, True)
     
     def free(self, name:str) -> None:
         # Update class attribute claim status
@@ -77,7 +88,7 @@ class Gifts:
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_sql_stauts(name, False)
+        self.update_database(name, False)
 
     
 def main():
