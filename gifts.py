@@ -64,11 +64,13 @@ class MySQLBridge:
         query = "UPDATE gifts SET claimed = %s WHERE name = %s"
         self.execute_query(query, (new_claim_status, name))
     
-    def get_gift_info(self, name:str) -> tuple:
+    def get_gift_info(self, name:str) -> tuple[str, int]:
         query = "SELECT free_code, claimed FROM gifts WHERE name = %s"
         result = self.execute_query(query, (name,))
 
-        return result[0]  # Assuming name is unique, return the first result
+        # Separate result tuple, parse claimed to bool and return separately
+        code, claimed = result[0]
+        return code, bool(claimed)
         
     def get_all_gifts(self) -> list:
         query = "SELECT name FROM gifts"
@@ -84,28 +86,27 @@ class Gift:
         self.img:str = img
         self.desc:str = desc
 
-        self.free_code:str = self.generate_code(name, False)
+        self.free_code:str = self.generate_code(name)
         self.claimed:bool = False
     
     def __repr__(self) -> str:
         return f"\"{self.title}\", {'Claimed' if self.claimed else 'Available'} (" + self.free_code + ")"
 
-    def generate_code(self, name:str, update:bool=True) -> str:
+    def generate_code(self, name:str) -> str:
         # Generate 0xRRDDDD code, where R is random and D is determined by name
         new_code = (crc32(name.encode('utf-8')) & 0xFFFF + (random.randint(0, 255) << 16))
         # Transform new code into 6 cipher hexa string
         new_code = f"{new_code:06X}"
 
-        if update:
-            self.free_code = new_code
         return new_code
     
     def to_dict(self) -> None:
         return {"title": self.title, "url": self.url, "img": self.img,
                 "claimed": self.claimed, "desc": self.desc}
     
-    def claim(self) -> None:
+    def claim(self, code:str) -> None:
         self.claimed = True
+        self.free_code = code
     
     def free(self) -> None:
         self.claimed = False
@@ -115,8 +116,6 @@ class Gift:
             self.free_code = free_code
         if new_status is not None:
             self.claimed = new_status
-
-
 
 class Gifts:
     def __init__(self, Mysql:MySQL) -> None:
@@ -169,13 +168,18 @@ class Gifts:
 
         return ret_ls
     
+    def get_code(self, name:str) -> str:
+        test = self.MysqlBridge.get_gift_info(name)
+        return test[0]
+    
     def is_claimed(self, name:str) -> bool:
-        return self.gift_dict[name].claimed
+        test = self.MysqlBridge.get_gift_info(name)
+        return test[1]
     
     def claim(self, name:str, code:str) -> None:
         # Update class attribute claim status
         gift:Gift = self.gift_dict[name]
-        gift.claim()
+        gift.claim(code)
         self.gift_dict[name] = gift
 
         # Update database information claim status

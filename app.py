@@ -51,6 +51,7 @@ class WebApp(Flask):
         @self.route('/get_info', methods=['POST'])
         def get_info():
             name = request.form['name']
+            self.GiftList.get_code(name)
             return [self.GiftList[name].title, self.GiftList[name].generate_code(name)]
 
         # Handle gift claim request
@@ -59,7 +60,6 @@ class WebApp(Flask):
             name = request.form['name']
             code = request.form['code']
 
-            print("DEBUG:", self.GiftList.is_claimed(name))
             if not self.GiftList.is_claimed(name):
                 # Mark gift as claimed including database update
                 self.GiftList.claim(name, code)
@@ -77,7 +77,7 @@ class WebApp(Flask):
                 return "error"
 
             # If user entered correct code, free gift including database update
-            if code.upper() == self.GiftList[name].free_code:
+            if code.upper() == self.GiftList.get_code(name):
                 # Mark gift as freed
                 self.GiftList.free(name)
                 return "success"
