@@ -41,16 +41,16 @@ function popupClaim(itemId) {
             document.getElementById('popup').style.display = 'flex';
             
             document.getElementById('popup-button').value = 'Potvrdit';
-            document.getElementById('popup-button').onclick = function() { giftClaim(name); };
+            document.getElementById('popup-button').onclick = function() { giftClaim(name, response[1]); };
         }
     });
 }
 
-function giftClaim(name) {
+function giftClaim(name, code) {
     $.ajax({
         type: "POST",
         url: "/claim",
-        data: { name: name },
+        data: { name: name, code: code },
         success: function(response) {
             if (response == "success") {
                 document.getElementById('claim-result').innerHTML = 'Svatební dar úspěšně rezervován';

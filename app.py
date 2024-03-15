@@ -57,11 +57,12 @@ class WebApp(Flask):
         @self.route('/claim', methods=['POST'])
         def claim():
             name = request.form['name']
+            code = request.form['code']
 
             print("DEBUG:", self.GiftList.is_claimed(name))
             if not self.GiftList.is_claimed(name):
                 # Mark gift as claimed including database update
-                self.GiftList.claim(name)
+                self.GiftList.claim(name, code)
                 return "success"
             else:
                 return "error"

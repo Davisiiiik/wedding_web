@@ -172,14 +172,14 @@ class Gifts:
     def is_claimed(self, name:str) -> bool:
         return self.gift_dict[name].claimed
     
-    def claim(self, name:str) -> None:
+    def claim(self, name:str, code:str) -> None:
         # Update class attribute claim status
         gift:Gift = self.gift_dict[name]
         gift.claim()
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_database(name, free_code=gift.free_code, new_status=True)
+        self.update_database(name, free_code=code, new_status=True)
     
     def free(self, name:str) -> None:
         # Update class attribute claim status
