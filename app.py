@@ -3,8 +3,7 @@ from gifts import Gifts
 import yaml
 
 CONFIG_FILE = "static/yaml/config.yml"
-IP = '10.0.0.116'
-PORT = 2000
+CONFIG_FILE_DEFAULT = "static/yaml/config.default.yml"
 
 class WebApp(Flask):
     def __init__(self):
@@ -65,21 +64,34 @@ class WebApp(Flask):
             
 
 def get_config() -> dict:
-    with open(CONFIG_FILE, "r", encoding="utf-8") as file:
-        config = yaml.load(file, Loader=yaml.Loader)
-    
-    connection = config.get("connection")
-    mysql = config.get("mysql")
+    try:
+        # Try to fetch connection and mysql data from config file
+        with open(CONFIG_FILE, "r", encoding="utf-8") as file:
+            config:dict = yaml.load(file, Loader=yaml.Loader)
+
+        connection = config["connection"]
+        mysql = config["mysql"]
+    except (FileNotFoundError, KeyError):
+        # If file not foud or corrupted, create new from default
+        with open(CONFIG_FILE_DEFAULT, "r", encoding="utf-8") as default_file:
+            config:dict = yaml.load(default_file, Loader=yaml.Loader)
+        
+        # Create new config file and store there default values
+        with open(CONFIG_FILE, "w", encoding="utf-8") as file:
+            yaml.dump(config, file, Dumper=yaml.Dumper, sort_keys=False)
+
+        connection = config.get("connection")
+        mysql = config.get("mysql")
 
     return connection, mysql
 
 
 def main() -> None:
-    config, _ = get_config()
+    connection, _ = get_config()
     App = WebApp()
 
     try:
-        App.run(**config)
+        App.run(**connection)
     except TypeError as err:
         raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n", err)
 

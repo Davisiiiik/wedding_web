@@ -1,0 +1,13 @@
+# This is configuration of host
+connection:
+  host: 0.0.0.0
+  port: 2000
+  debug: False
+
+# This is configuration of MySQL
+mysql:
+  username: user1
+  password: ""
+  hostname: 127.0.0.1:3306
+  database: wedding_gifts
+  
