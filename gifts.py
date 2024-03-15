@@ -1,8 +1,77 @@
 import yaml
 import random
 from zlib import crc32
+from flask_mysqldb import MySQL
+from MySQLdb import IntegrityError
+from flask import current_app
 
 GIFT_LIST_FILE = "static/yaml/gifts.yml"
+
+OK = 0
+ERR = -1
+
+
+class MySQLBridge:
+    def __init__(self, Mysql:MySQL):
+        self.Mysql:MySQL = Mysql
+        
+        # Create gifts database table, if it doesnt exist
+        self.create_table()
+    
+    def execute_query(self, query:str, params:tuple=None):
+        cursor = self.Mysql.connection.cursor()
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+
+        result = cursor.fetchall()
+        self.Mysql.connection.commit()
+        cursor.close()
+
+        return result
+    
+    def create_table(self) -> None:
+        query = """
+        CREATE TABLE IF NOT EXISTS gifts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) UNIQUE,
+            free_code VARCHAR(255),
+            claimed BOOLEAN
+        )
+        """
+        self.execute_query(query)
+    
+    def add_gift(self, name:str, free_code:str, claimed:bool) -> int:
+        query = "INSERT INTO gifts (name, free_code, claimed) VALUES (%s, %s, %s)"
+        try:
+            self.execute_query(query, (name, free_code, claimed))
+        except IntegrityError:
+            print("Error: Database entry with name \"" + name + "\" already exists!")
+            return ERR
+        else:
+            return OK
+    
+    def update_free_code(self, name:str, new_free_code:str) -> None:
+        query = "UPDATE gifts SET free_code = %s WHERE name = %s"
+        self.execute_query(query, (new_free_code, name))
+    
+    def update_claim_status(self, name:str, new_claim_status:bool) -> None:
+        query = "UPDATE gifts SET claimed = %s WHERE name = %s"
+        self.execute_query(query, (new_claim_status, name))
+    
+    def get_gift_info(self, name:str) -> tuple:
+        query = "SELECT free_code, claimed FROM gifts WHERE name = %s"
+        result = self.execute_query(query, (name,))
+
+        return result[0]  # Assuming name is unique, return the first result
+        
+    def get_all_gifts(self) -> list:
+        query = "SELECT name FROM gifts"
+        result = self.execute_query(query)
+
+        return [row[0] for row in result]
+
 
 class Gift:
     def __init__(self, name:str, title:str, url:str, img:str, desc:str) -> None:
@@ -15,7 +84,7 @@ class Gift:
         self.claimed:bool = False
     
     def __repr__(self) -> str:
-        return f"\"{self.title}\", {'Claimed' if self.claimed else 'Available'} ({self.free_code:X})"
+        return f"\"{self.title}\", {'Claimed' if self.claimed else 'Available'} (" + self.free_code + ")"
 
     def generate_code(self, name:str, update:bool=True) -> str:
         # Generate 0xRRDDDD code, where R is random and D is determined by name
@@ -37,22 +106,41 @@ class Gift:
     def free(self) -> None:
         self.claimed = False
 
-    def update_database(self, name:str, new_status:bool):
-        pass
+    def update_attributes(self, free_code:str=None, new_status:bool=None):
+        if free_code is not None:
+            self.free_code = free_code
+        if new_status is not None:
+            self.claimed = new_status
 
 
 class Gifts:
-    def __init__(self) -> None:
-        self.gift_dict = {}
+    def __init__(self, Mysql:MySQL) -> None:
+        self.gift_dict:dict = {}
 
         with open(GIFT_LIST_FILE, "r", encoding="utf-8") as file:
             gifts = yaml.load(file, Loader=yaml.Loader)
 
+        # Load gifts configuration
         try:
             for gift in gifts:
                 self.gift_dict[gift] = Gift(gift, **gifts[gift])
         except TypeError as err:
             raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n", err)
+        
+        # Load gifts configuration
+        self.MysqlBridge = MySQLBridge(Mysql)
+        self.MysqlBridge.get_all_gifts()
+
+        # Get all gifts from database and synchronize them with self.gift_dict
+        gifts_in_db:list = self.MysqlBridge.get_all_gifts()
+        for gift in gifts:
+            # If gift already in db, read their free_code and claim status
+            if gift in gifts_in_db:
+                code, claimed = self.MysqlBridge.get_gift_info(gift)
+                self.gift_dict[gift].update_attributes(free_code=code, new_status=claimed)
+            # Else add gift into the database with default values
+            else:
+                self.MysqlBridge.add_gift(gift, self.gift_dict[gift].free_code, False)
 
     def __repr__(self) -> str:
         return "\n".join(str(key) + ": "
@@ -61,8 +149,12 @@ class Gifts:
     def __getitem__(self, name: str) -> Gift:
         return self.gift_dict[name]
 
-    def update_database(self, name:str, new_status:bool):
-        pass
+    def update_database(self, name:str, free_code:str=None, new_status:bool=None):
+        if free_code is not None:
+            self.MysqlBridge.update_free_code(name, free_code)
+            
+        if new_status is not None:
+            self.MysqlBridge.update_claim_status(name, new_status)
 
     def get(self):
         ret_ls = []
@@ -79,7 +171,7 @@ class Gifts:
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_database(name, True)
+        self.update_database(name, free_code=gift.free_code, new_status=True)
     
     def free(self, name:str) -> None:
         # Update class attribute claim status
@@ -88,7 +180,7 @@ class Gifts:
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_database(name, False)
+        self.update_database(name, new_status=False)
 
     
 def main():

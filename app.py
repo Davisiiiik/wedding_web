@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request
 from gifts import Gifts
+from flask_mysqldb import MySQL
 import yaml
 
 CONFIG_FILE = "static/yaml/config.yml"
 CONFIG_FILE_DEFAULT = "static/yaml/config.default.yml"
 
 class WebApp(Flask):
-    def __init__(self):
+    def __init__(self, mysql_cfg:dict):
         super().__init__(__name__)
         self.menu = [
             {'title': 'Úvod',           'url': 'home'},
@@ -15,7 +16,15 @@ class WebApp(Flask):
             {'title': 'Svatební dary',  'url': 'gifts'}
         ]
 
-        self.GiftList = Gifts()
+        # Config MySQL
+        self.config['MYSQL_HOST'] = mysql_cfg.get('hostname')
+        self.config['MYSQL_USER'] = mysql_cfg.get('username')
+        self.config['MYSQL_PASSWORD'] = mysql_cfg.get('password')
+        self.config['MYSQL_DB'] = mysql_cfg.get('database')
+        self.Mysql = MySQL(self)
+        
+        with self.app_context():
+            self.GiftList = Gifts(self.Mysql)
 
         self.create_pages()
 
@@ -53,8 +62,6 @@ class WebApp(Flask):
 
             code.upper()
 
-            print("DEBUG:", name, code, self.GiftList[name].free_code)
-
             if code == self.GiftList[name].free_code:
                 # Mark gift as freed
                 self.GiftList.free(name)
@@ -69,29 +76,29 @@ def get_config() -> dict:
         with open(CONFIG_FILE, "r", encoding="utf-8") as file:
             config:dict = yaml.load(file, Loader=yaml.Loader)
 
-        connection = config["connection"]
-        mysql = config["mysql"]
+        connection_cfg = config["connection"]
+        mysql_cfg = config["mysql"]
     except (FileNotFoundError, KeyError):
         # If file not foud or corrupted, create new from default
-        with open(CONFIG_FILE_DEFAULT, "r", encoding="utf-8") as default_file:
+        with open(CONFIG_FILE_DEFAULT, "r", encoding="utf-8") as default_file: 
             config:dict = yaml.load(default_file, Loader=yaml.Loader)
         
         # Create new config file and store there default values
         with open(CONFIG_FILE, "w", encoding="utf-8") as file:
             yaml.dump(config, file, Dumper=yaml.Dumper, sort_keys=False)
 
-        connection = config.get("connection")
-        mysql = config.get("mysql")
+        connection_cfg = config.get("connection")
+        mysql_cfg = config.get("mysql")
 
-    return connection, mysql
+    return connection_cfg, mysql_cfg
 
 
 def main() -> None:
-    connection, _ = get_config()
-    App = WebApp()
+    connection_cfg, mysql_cfg = get_config()
+    App = WebApp(mysql_cfg)
 
     try:
-        App.run(**connection)
+        App.run(**connection_cfg)
     except TypeError as err:
         raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n", err)
 
