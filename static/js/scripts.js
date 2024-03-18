@@ -55,15 +55,15 @@ function giftClaim(name, code) {
             if (response == "success") {
                 document.getElementById('claim-result').innerHTML = 'Svatební dar úspěšně rezervován';
                 document.getElementById('claim-result').style.color = 'green';
-    
-                document.getElementById('popup-button').value = 'Zavřít';
-                document.getElementById('popup-button').onclick = closePopup;
             }
             else {
                 inputError(document.getElementById('code-input'),
                            document.getElementById('claim-result'),
                            'Svatební dar už byl zarezervován někým jiným')
             }
+            // Change confirm button to close button for both cases
+            document.getElementById('popup-button').value = 'Zavřít';
+            document.getElementById('popup-button').onclick = closePopup;
             // Update gift as claimed for both cases
             updateGiftState(name, true);
         }
