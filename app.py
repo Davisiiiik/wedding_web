@@ -62,7 +62,7 @@ class WebApp(Flask):
 
             if not self.GiftList.is_claimed(name):
                 # Mark gift as claimed including database update
-                self.GiftList.claim(name, code)
+                self.GiftList.claim(name, code, request.remote_addr)
                 return "success"
             else:
                 return "error"

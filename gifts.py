@@ -40,15 +40,16 @@ class MySQLBridge:
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) UNIQUE,
             free_code VARCHAR(255),
-            claimed BOOLEAN
+            claimed BOOLEAN,
+            claim_ip_addr VARCHAR(255)
         )
         """
         self.execute_query(query)
     
-    def add_gift(self, name:str, free_code:str, claimed:bool) -> int:
-        query = "INSERT INTO gifts (name, free_code, claimed) VALUES (%s, %s, %s)"
+    def add_gift(self, name:str) -> int:
+        query = "INSERT INTO gifts (name, claimed) VALUES (%s, %s)"
         try:
-            self.execute_query(query, (name, free_code, claimed))
+            self.execute_query(query, (name, False))
         except IntegrityError:
             print("Error: Database entry with name \""
                   + name + "\" already exists!")
@@ -64,13 +65,17 @@ class MySQLBridge:
         query = "UPDATE gifts SET claimed = %s WHERE name = %s"
         self.execute_query(query, (new_claim_status, name))
     
+    def update_claim_ip_addr(self, name:str, claim_ip_addr:bool) -> None:
+        query = "UPDATE gifts SET claim_ip_addr = %s WHERE name = %s"
+        self.execute_query(query, (claim_ip_addr, name))
+    
     def get_gift_info(self, name:str) -> tuple[str, int]:
-        query = "SELECT free_code, claimed FROM gifts WHERE name = %s"
+        query = "SELECT free_code, claimed, claim_ip_addr FROM gifts WHERE name = %s"
         result = self.execute_query(query, (name,))
 
         # Separate result tuple, parse claimed to bool and return separately
-        code, claimed = result[0]
-        return code, bool(claimed)
+        code, claimed, claim_ip_addr = result[0]
+        return code, bool(claimed), claim_ip_addr
         
     def get_all_gifts(self) -> list:
         query = "SELECT name FROM gifts"
@@ -140,11 +145,11 @@ class Gifts:
         for gift in gifts:
             # If gift already in db, read their free_code and claim status
             if gift in gifts_in_db:
-                code, claimed = self.MysqlBridge.get_gift_info(gift)
+                code, claimed, _ = self.MysqlBridge.get_gift_info(gift)
                 self.gift_dict[gift].update_attributes(free_code=code, new_status=claimed)
             # Else add gift into the database with default values
             else:
-                self.MysqlBridge.add_gift(gift, self.gift_dict[gift].free_code, False)
+                self.MysqlBridge.add_gift(gift)
 
     def __repr__(self) -> str:
         return "\n".join(str(key) + ": "
@@ -153,12 +158,15 @@ class Gifts:
     def __getitem__(self, name: str) -> Gift:
         return self.gift_dict[name]
 
-    def update_database(self, name:str, free_code:str=None, new_status:bool=None):
+    def update_database(self, name:str, free_code:str=None, new_status:bool=None, claim_ip_addr:str=None):
         if free_code is not None:
             self.MysqlBridge.update_free_code(name, free_code)
             
         if new_status is not None:
             self.MysqlBridge.update_claim_status(name, new_status)
+            
+        if claim_ip_addr is not None:
+            self.MysqlBridge.update_claim_ip_addr(name, claim_ip_addr)
 
     def get(self):
         ret_ls = []
@@ -176,14 +184,18 @@ class Gifts:
         test = self.MysqlBridge.get_gift_info(name)
         return test[1]
     
-    def claim(self, name:str, code:str) -> None:
+    def get_claim_ip_addr(self, name:str) -> bool:
+        test = self.MysqlBridge.get_gift_info(name)
+        return test[2]
+    
+    def claim(self, name:str, code:str, ip_addr:str) -> None:
         # Update class attribute claim status
         gift:Gift = self.gift_dict[name]
         gift.claim(code)
         self.gift_dict[name] = gift
 
         # Update database information claim status
-        self.update_database(name, free_code=code, new_status=True)
+        self.update_database(name, free_code=code, new_status=True, claim_ip_addr=ip_addr)
     
     def free(self, name:str) -> None:
         # Update class attribute claim status
