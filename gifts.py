@@ -86,45 +86,23 @@ class MySQLBridge:
 
 class Gift:
     def __init__(self, name:str, title:str, url:str, img:str, desc:str) -> None:
+        self.name:str = name
         self.title:str = title
         self.url:str = url
         self.img:str = img
         self.desc:str = desc
-
-        self.free_code:str = self.generate_code(name)
-        self.claimed:bool = False
     
     def __repr__(self) -> str:
-        return f"\"{self.title}\", {'Claimed' if self.claimed else 'Available'} (" + self.free_code + ")"
-
-    def generate_code(self, name:str) -> str:
-        # Generate 0xRRDDDD code, where R is random and D is determined by name
-        new_code = (crc32(name.encode('utf-8')) & 0xFFFF + (random.randint(0, 255) << 16))
-        # Transform new code into 6 cipher hexa string
-        new_code = f"{new_code:06X}"
-
-        return new_code
+        return f"{self.name}: \"{self.title}\", {self.desc}"
     
     def to_dict(self) -> None:
-        return {"title": self.title, "url": self.url, "img": self.img,
-                "claimed": self.claimed, "desc": self.desc}
-    
-    def claim(self, code:str) -> None:
-        self.claimed = True
-        self.free_code = code
-    
-    def free(self) -> None:
-        self.claimed = False
+        return {"name": self.name, "title": self.title, "desc": self.desc,
+                "url": self.url, "img": self.img}
 
-    def update_attributes(self, free_code:str=None, new_status:bool=None):
-        if free_code is not None:
-            self.free_code = free_code
-        if new_status is not None:
-            self.claimed = new_status
 
 class Gifts:
     def __init__(self, Mysql:MySQL) -> None:
-        self.gift_dict:dict = {}
+        self.gift_list:list = []
 
         with open(GIFT_LIST_FILE, "r", encoding="utf-8") as file:
             gifts = yaml.load(file, Loader=yaml.Loader)
@@ -132,7 +110,7 @@ class Gifts:
         # Load gifts configuration
         try:
             for gift in gifts:
-                self.gift_dict[gift] = Gift(gift, **gifts[gift])
+                self.gift_list.append(Gift(gift, **gifts[gift]))
         except TypeError as err:
             raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n" + str(err))
         
@@ -140,23 +118,22 @@ class Gifts:
         self.MysqlBridge = MySQLBridge(Mysql)
         self.MysqlBridge.get_all_gifts()
 
-        # Get all gifts from database and synchronize them with self.gift_dict
+        # Get all gifts from database and check if any is missing there
         gifts_in_db:list = self.MysqlBridge.get_all_gifts()
         for gift in gifts:
-            # If gift already in db, read their free_code and claim status
-            if gift in gifts_in_db:
-                code, claimed, _ = self.MysqlBridge.get_gift_info(gift)
-                self.gift_dict[gift].update_attributes(free_code=code, new_status=claimed)
-            # Else add gift into the database with default values
-            else:
+            # If gift not in database, add gift into the database with default values
+            if gift not in gifts_in_db:
                 self.MysqlBridge.add_gift(gift)
 
     def __repr__(self) -> str:
-        return "\n".join(str(key) + ": "
-                         + str(self.gift_dict[key]) for key in self.gift_dict)
+        return "\n".join(str(gift) for gift in self.gift_list)
     
-    def __getitem__(self, name: str) -> Gift:
-        return self.gift_dict[name]
+    def __getitem__(self, name:str) -> Gift|None:
+        item:Gift
+        for item in self.gift_list:
+            if item.name == name:
+                return item
+        return None
 
     def update_database(self, name:str, free_code:str=None, new_status:bool=None, claim_ip_addr:str=None):
         if free_code is not None:
@@ -170,9 +147,10 @@ class Gifts:
 
     def get(self):
         ret_ls = []
-        for key in self.gift_dict:
-            gift:Gift = self.gift_dict[key]
-            ret_ls.append({"name": key} | gift.to_dict())
+        gift:Gift
+        for gift in self.gift_list:
+            claimed = self.is_claimed(gift.name)
+            ret_ls.append(gift.to_dict() | {"claimed": claimed})
 
         return ret_ls
     
@@ -189,19 +167,26 @@ class Gifts:
         return test[2]
     
     def claim(self, name:str, code:str, ip_addr:str) -> None:
-        # Update class attribute claim status
-        gift:Gift = self.gift_dict[name]
-        gift.claim(code)
-        self.gift_dict[name] = gift
-
         # Update database information claim status
-        self.update_database(name, free_code=code, new_status=True, claim_ip_addr=ip_addr)
+        self.update_database(name, free_code=code, new_status=True,
+                             claim_ip_addr=ip_addr)
     
     def free(self, name:str) -> None:
-        # Update class attribute claim status
-        gift:Gift = self.gift_dict[name]
-        gift.free()
-        self.gift_dict[name] = gift
-
         # Update database information claim status
         self.update_database(name, new_status=False)
+
+
+def generate_code(name:str) -> str:
+    """Generates a 6 digit hexadecimal code from given name
+
+    Args:
+        name (str): Name from which the code will be generated
+
+    Returns:
+        str: Generated 6 digit hexadeciaml code
+    """
+    # Generate 0xRRDDDD code, where R is random and D is determined by name
+    new_code = (crc32(name.encode('utf-8')) & 0xFFFF
+                + (random.randint(0, 255) << 16))
+    # Transform new code into 6 cipher hexa string and return
+    return f"{new_code:06X}"

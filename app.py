@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from gifts import Gifts
+from gifts import Gifts, generate_code
 from flask_mysqldb import MySQL
 import shutil
 import yaml
@@ -52,7 +52,7 @@ class WebApp(Flask):
         def get_info():
             name = request.form['name']
             self.GiftList.get_code(name)
-            return [self.GiftList[name].title, self.GiftList[name].generate_code(name)]
+            return [self.GiftList[name].title, generate_code(name)]
 
         # Handle gift claim request
         @self.route('/claim', methods=['POST'])
