@@ -76,7 +76,7 @@ class WebApp(Flask):
             if not code:
                 return "error"
 
-            # If user entered correct code, free gift including database update
+            # If user entered correct code, reset claimed flag in database
             if code.upper() == self.GiftList.get_code(name):
                 # Mark gift as freed
                 self.GiftList.free(name)
@@ -120,7 +120,7 @@ def main() -> None:
     try:
         App.run(**connection_cfg)
     except TypeError as err:
-        raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n", err)
+        raise Exception("Syntax Error in " + CONFIG_FILE + " file.\n" + str(err))
 
 if __name__ == '__main__':
     main()

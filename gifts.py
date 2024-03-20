@@ -23,8 +23,10 @@ class MySQLBridge:
     
     def execute_query(self, query:str, params:tuple=None):
         cursor = self.Mysql.connection.cursor()
+        # Execute query
         cursor.execute(query, params)
 
+        # Get all return data and commit changes to database
         result = cursor.fetchall()
         self.Mysql.connection.commit()
         cursor.close()
@@ -32,6 +34,7 @@ class MySQLBridge:
         return result
     
     def create_table(self) -> None:
+        # Create a database table if it doesnt exist
         query = """
         CREATE TABLE IF NOT EXISTS gifts (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,10 +47,12 @@ class MySQLBridge:
         self.execute_query(query)
     
     def add_gift(self, name:str) -> int:
+        # Add new gift into the database with default values
         query = "INSERT INTO gifts (name, claimed) VALUES (%s, %s)"
         try:
             self.execute_query(query, (name, False))
         except IntegrityError:
+            # Since gifts MUST be unique by name, return error on duplicity
             print("Error: Database entry with name \""
                   + name + "\" already exists!")
             return ERR
@@ -101,6 +106,7 @@ class Gifts:
     def __init__(self, Mysql:MySQL) -> None:
         self.gift_list:list = []
 
+        # Load gifts from yaml file
         with open(GIFT_LIST_FILE, "r", encoding="utf-8") as file:
             gifts = yaml.load(file, Loader=yaml.Loader)
 
@@ -109,16 +115,18 @@ class Gifts:
             for gift in gifts:
                 self.gift_list.append(Gift(gift, **gifts[gift]))
         except TypeError as err:
-            raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n" + str(err))
+            raise Exception("Syntax Error in " + GIFT_LIST_FILE + " file.\n"
+                            + str(err))
         
         # Load gifts configuration
         self.MysqlBridge = MySQLBridge(Mysql)
         self.MysqlBridge.get_all_gifts()
 
-        # Get all gifts from database and check if any is missing there
+        # Get all gifts from database and check if any gift loaded from yaml
+        # config is not missing
         gifts_in_db:list = self.MysqlBridge.get_all_gifts()
         for gift in gifts:
-            # If gift not in database, add gift into the database with default values
+            # If gift is not in database, add it with default values
             if gift not in gifts_in_db:
                 self.MysqlBridge.add_gift(gift)
 
@@ -164,12 +172,12 @@ class Gifts:
         return test[2]
     
     def claim(self, name:str, code:str, ip_addr:str) -> None:
-        # Update database information claim status
+        # Update gift information in database and set claim status to true
         self.update_database(name, free_code=code, new_status=True,
                              claim_ip_addr=ip_addr)
     
     def free(self, name:str) -> None:
-        # Update database information claim status
+        # Reset gift claim status in database
         self.update_database(name, new_status=False)
 
 
