@@ -23,10 +23,7 @@ class MySQLBridge:
     
     def execute_query(self, query:str, params:tuple=None):
         cursor = self.Mysql.connection.cursor()
-        if params:
-            cursor.execute(query, params)
-        else:
-            cursor.execute(query)
+        cursor.execute(query, params)
 
         result = cursor.fetchall()
         self.Mysql.connection.commit()

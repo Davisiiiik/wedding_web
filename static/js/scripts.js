@@ -89,6 +89,7 @@ function giftFree(name) {
     const regex = /^[0-9A-F]*$/; // Regular expression for hexadecimal characters
     var code = document.getElementById('code-input').value.toUpperCase();
 
+    // If the field is empty, return error
     if (code == null || code == "") {
         inputError(document.getElementById('code-input'),
                    document.getElementById('claim-result'),
@@ -96,6 +97,7 @@ function giftFree(name) {
         return -1;
     }
 
+    // If the content is outside the const regex scope, return error
     if (!regex.test(code)) {
         inputError(document.getElementById('code-input'),
                    document.getElementById('claim-result'),
