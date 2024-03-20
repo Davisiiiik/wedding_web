@@ -13,11 +13,30 @@ function smooth_scroll() {
             // Update URL
             const url = new URL(window.location.href);
             url.hash = this.getAttribute('href');
-            //console.info(url.hash)
             if (url.hash === "#home") {
                 url.hash = ''
             }
             history.pushState(null, null, url);
+        });
+    });
+}
+
+function highligh_active_section() {
+    // JavaScript code to handle scroll event and highlight the menu item
+    window.addEventListener('scroll', function() {
+        var sections = document.querySelectorAll('section');
+        var scrollPosition = window.scrollY;
+
+        sections.forEach(function(section) {
+            var top = section.offsetTop;
+            var height = section.offsetHeight;
+            var id = section.getAttribute('id');
+
+            if (scrollPosition >= top && scrollPosition < top + height) {
+                document.querySelector('a[href="#' + id + '"]').classList.add('active');
+            } else {
+                document.querySelector('a[href="#' + id + '"]').classList.remove('active');
+            }
         });
     });
 }
